@@ -42,13 +42,13 @@ flags.DEFINE_integer('max_steps', 2000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('verbose_steps', 200, 'Number of steps to return training loss.')
 flags.DEFINE_integer('checkpoint_steps', 1000, 'Number of steps to create a checkpoint.')
 
-flags.DEFINE_integer('inputDim', 14, 'Input dimension') # 28*28 for MNIST example
-flags.DEFINE_integer('num_classes', 12, 'Number of output classes (dimension)')
+flags.DEFINE_integer('inputDim', 369, 'Input dimension')
+flags.DEFINE_integer('num_classes', 2, 'Number of output classes (dimension)')
 
 flags.DEFINE_integer('hidden1', 20, 'Number of units in hidden layer 1.')
 flags.DEFINE_integer('hidden2', 20, 'Number of units in hidden layer 2.')
 
-flags.DEFINE_integer('batch_size', 10, 'Batch size.  '
+flags.DEFINE_integer('batch_size', 20, 'Batch size.  '
                      'Must divide evenly into the dataset sizes.')
 
 flags.DEFINE_string('train_dir', 'data', 'Directory to put the training data.')
@@ -67,12 +67,10 @@ def placeholder_inputs(batch_size):
     labels_placeholder: Labels placeholder.
   """
   # Note that the shapes of the placeholders match the shapes of the full
-  # image and label tensors, except the first dimension is now batch_size
   # rather than the full size of the train or test data sets.
   input_placeholder = tf.placeholder(tf.float32, shape=(None,
                                                          FLAGS.inputDim))
   labels_placeholder = tf.placeholder(tf.int32, shape=(None)) # None, 1
-
   return input_placeholder, labels_placeholder
 
 def fill_feed_dict(data_set, inputs_pl, labels_pl):
@@ -95,18 +93,17 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
   # Create the feed_dict for the placeholders filled with the next
   # `batch size ` examples.
   inputs_feed, labels_feed = data_set.next_batch(FLAGS.batch_size)
-
+  
   feed_dict = {
       inputs_pl: inputs_feed,
       labels_pl: labels_feed,
   }
   return feed_dict
 
-def output_test(sess,label, inputs_pl, test_set):
+def output_test(sess, label, inputs_pl, test_set):
   """Run one round on the output, and optionally output to a csv
   """
   print("Outputing Test")
-  print(test_set)
 
   feed_dict = {
     inputs_pl : test_set,
@@ -114,7 +111,7 @@ def output_test(sess,label, inputs_pl, test_set):
 
   outputArray = label.eval(feed_dict=feed_dict, session=sess)
   print(outputArray)
-
+    
   #outputArray = sess.run(label, feed_dict=feed_dict) # this seems not working
 
   return outputArray
@@ -150,9 +147,9 @@ def do_eval(sess,
 def run_training():
   """Train classifier for a number of steps."""
   # Get the sets of inputs and labels for training, validation
-  data_sets = input_data.read_data_sets()
-  trainData = data_sets.trainData
-  testData = data_sets.trainData.testInput
+  data_sets = input_data.read_input()
+  trainData = data_sets
+  testData = data_sets.testInput
 
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():
@@ -254,12 +251,8 @@ def run_training():
                 label,
                 inputs_placeholder,
                 testData)
-
-    input_data.write_csv('testOutput.csv', outputArray)
-        
-
-def main(_):
-  run_training()
+    
+    return testData, outputArray
 
 if __name__ == '__main__':
   tf.app.run()
