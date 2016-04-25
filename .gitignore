@@ -4,6 +4,8 @@ kaggle/**/data/*.csv
 **/data/*
 **/data-*
 **/checkpoint
+**/*checkpoint.ipynb
+
 
 #################
 ## Eclipse
